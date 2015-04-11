@@ -46,6 +46,7 @@ func (enc *Encoding) Decode(dst, src []byte) (int, error) {
 
 // DecodeString decodes the given base64-encoded string using base64.DecodeString, first padding the input as needed to comply with base64 standards.
 func (enc *Encoding) DecodeString(s string) ([]byte, error) {
+	// fix up as suggested by David Symonds in https://github.com/golang/go/issues/4237#issuecomment-66071224
 	if n := len(s) % 4; n != 0 {
 		s += strings.Repeat("=", 4-n)
 	}
