@@ -14,16 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package base64fix
+package base64addons
 
-import (
-	"encoding/base64"
-	"strings"
-)
+import "encoding/base64"
 
 // Encoding wraps the underlying encoding/base64 implementation, allowing base64fix to intercept a decode method, check the payload, and then forward on.
 type Encoding struct {
 	encoding *base64.Encoding
+	convert  bool
 }
 
 // StdEncoding provides a wrapped base64.StdEncoding struct
@@ -32,23 +30,27 @@ var StdEncoding = Encoding{encoding: base64.StdEncoding}
 // URLEncoding provides a wrapped base64.URLEncoding
 var URLEncoding = Encoding{encoding: base64.URLEncoding}
 
+// AutoEncoding wraps base64.URLEncoding and will cause data to be autoconverted from StdEncoding to URLEncoding
+var AutoEncoding = Encoding{encoding: base64.URLEncoding, convert: true}
+
+func ensurePadding(data []byte) []byte {
+	if n := len(data) % 4; n != 0 {
+		pad := make([]byte, 4-n)
+		for i := range pad {
+			pad[i] = '='
+		}
+		data = append(data, pad...)
+	}
+	return data
+}
+
 // Decode decodes the given base64-encoded src using base64.Decode, first padding the input as needed to comply with base64 standards.
 func (enc *Encoding) Decode(dst, src []byte) (int, error) {
-	if n := len(src) % 4; n != 0 {
-		p := make([]byte, 4-n)
-		for i := range p {
-			p[i] = '='
-		}
-		src = append(src, p...)
-	}
-	return enc.encoding.Decode(dst, src)
+	return enc.encoding.Decode(dst, ensurePadding(src))
 }
 
 // DecodeString decodes the given base64-encoded string using base64.DecodeString, first padding the input as needed to comply with base64 standards.
 func (enc *Encoding) DecodeString(s string) ([]byte, error) {
-	// fix up as suggested by David Symonds in https://github.com/golang/go/issues/4237#issuecomment-66071224
-	if n := len(s) % 4; n != 0 {
-		s += strings.Repeat("=", 4-n)
-	}
+	s = string(ensurePadding([]byte(s)))
 	return enc.encoding.DecodeString(s)
 }

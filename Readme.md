@@ -1,27 +1,31 @@
-# base64fix
+# base64x
 
-Go’s `encoding/base64` package does not fully decode base64 encoded data which isn’t padded. This is problematic with strings encoded with a base64 URL encoding strategy in which padding is optional per the specification and isn’t provided by some encoders—especially in cases where the data length is known, either by a HTTP header or by being parsed from a JSON data payload.
+This tiny package provides a couple of extensions to Go’s `encoding/base64` package. These extensions are:
 
-This tiny library wraps Go’s `encoding/base64` decoding with quick check to ensure that the data you’re passing in is padded and, if needed, will fix it by adding the correct padding.
+* Ability to fixup missing padding in base64 encoded data
+* Translation between base64 data in `StdEncoding` and `URLEncoding`
+
+Both of these are intended to implement robust handling around base64 data that you may process from sources that you don’t control. For example, some implementations don’t include padding in URL-encoded base64 data in cases where the data length is known. Sending over HTTP or as a JSON dictionary parameter? The length is known.
+
 
 ## Usage
 
 To use, first import this library:
 
 ```
-import "github.com/duncan/base64fix"
+import "github.com/duncan/base64x"
 ```
 
-Then, instead of decoding base64 data using the following which won’t fully decode the base64 data and which will return a `CorruptInputError`:
+Then, replace calls like this, which will return only `abc` and a `CorruptInputError`:
 
 ```go
 s, err := base64.URLEncoding.DecodeString("YWJjZGU")
 ```
 
-This will return `abc` and an error that indicates a problem. Instead of this, you can use the following:
+with this:
 
 ```go
-s, err := base64fix.URLEncoding.DecodeString("YWJjZGU")
+s, err := base64x.URLEncoding.DecodeString("YWJjZGU")
 ```
 
 This correctly decodes `abcde` with no error.
@@ -32,7 +36,7 @@ In addition to `DecodeString`, an implementation that wraps the default `Decode`
 i, err := StdEncoding.Decode(d, []byte(s))
 ```
 
-If the behavior of Go’s `encoding/base64` package changes and becomes more accepting of unpadded content, you can easily move back to the default implementation by changing `base64fix` to `base64` and dropping the import.
+If the behavior of Go’s `encoding/base64` package changes and becomes more accepting of unpadded content, you can easily move back to the default implementation by changing `base64x` to `base64` and dropping the import.
 
 ## Discussion of padding requirements
 
@@ -55,7 +59,7 @@ In other words, it’s complicated. But, in the final analysis, getting things d
 
 **What about fixing it in Go’s core library?**
 
-Probably not going to happen any time soon. The issue of the core library’s strict decoding has been discussed since at least 2012—see [issue #4237 on github.com/golang/go](https://github.com/golang/go/issues/4237). It has been postponed multiple times by the core maintainers and doesn’t look like it’ll be addressed anytime soon.
+The issue of the core library’s strict decoding has been discussed since at least 2012—see [issue #4237 on github.com/golang/go](https://github.com/golang/go/issues/4237). It has been postponed multiple times by the core maintainers and doesn’t look like it’ll be addressed anytime soon. I’ve considered submitting a pull request, but even if I do, I need the functionality in running applications today.
 
 **What about encoding? Why not a wrapper to remove padding?**
 

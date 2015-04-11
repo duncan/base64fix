@@ -14,9 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package base64fix
+package base64addons
 
 import "testing"
+
+func TestAutoconvertIsFalseByDefault(t *testing.T) {
+	e := Encoding{}
+	if e.convert {
+		t.Errorf("Expected autoconvert to be false!")
+	}
+}
 
 func TestStdDecodeAcceptsNormallyPaddedData(t *testing.T) {
 	s := "YWJjZGU="
