@@ -21,7 +21,7 @@ s, err := base64.URLEncoding.DecodeString("YWJjZGU")
 This will return `abc` and an error that indicates a problem. Instead of this, you can use the following:
 
 ```go
-s, err :- base64fix.URLEncoding.DecodeString("YWJjZGU")
+s, err := base64fix.URLEncoding.DecodeString("YWJjZGU")
 ```
 
 This correctly decodes `abcde` with no error.
