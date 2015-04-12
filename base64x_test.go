@@ -25,6 +25,13 @@ func TestAutoconvertIsFalseByDefault(t *testing.T) {
 	}
 }
 
+func TestConvertEncoding(t *testing.T) {
+	s := convertEncoding("ABCDEF+12345/DKDLS")
+	if s != "ABCDEF-12345_DKDLS" {
+		t.Errorf("Encoding conversation fail. Got %s", s)
+	}
+}
+
 func TestStdDecodeAcceptsNormallyPaddedData(t *testing.T) {
 	s := "YWJjZGU="
 	d := make([]byte, len(s))
@@ -85,6 +92,36 @@ func TestURLDecodeAcceptsUnpaddedData(t *testing.T) {
 	}
 }
 
+func TestAutoDecodeAcceptsNormallyPaddedData(t *testing.T) {
+	s := "YWJjZGU="
+	d := make([]byte, len(s))
+	i, err := AutoEncoding.Decode(d, []byte(s))
+	if string(d[0:i]) != "abcde" {
+		t.Errorf("Expected abcde, got %s", string(d))
+	}
+	if i > len(s) {
+		t.Errorf("Expected %v bytes decoded, was %v", len(s), i)
+	}
+	if err != nil {
+		t.Errorf("Unexpected error %s", err)
+	}
+}
+
+func TestAutoDecodeAcceptsUnpaddedData(t *testing.T) {
+	s := "YWJjZGU"
+	d := make([]byte, len(s))
+	i, err := AutoEncoding.Decode(d, []byte(s))
+	if string(d[0:i]) != "abcde" {
+		t.Errorf("Expected abcde, got %s", string(d))
+	}
+	if i > len(s) {
+		t.Errorf("Expected %v bytes decoded, was %v", len(s), i)
+	}
+	if err != nil {
+		t.Errorf("Unexpected error %s", err)
+	}
+}
+
 func TestStdDecodeAcceptsNormallyPaddedStrings(t *testing.T) {
 	s, err := StdEncoding.DecodeString("YWJjZGU=")
 	if string(s) != "abcde" {
@@ -117,6 +154,26 @@ func TestURLDecodeAcceptsNormallyPaddedStrings(t *testing.T) {
 
 func TestURLDecodeStringAcceptsUnpaddedStrings(t *testing.T) {
 	s, err := URLEncoding.DecodeString("YWJjZGU")
+	if string(s) != "abcde" {
+		t.Errorf("Expected abcde, got %s", string(s))
+	}
+	if err != nil {
+		t.Errorf("Unexpected error %s", err)
+	}
+}
+
+func TestAutoDecodeAcceptsNormallyPaddedStrings(t *testing.T) {
+	s, err := AutoEncoding.DecodeString("YWJjZGU=")
+	if string(s) != "abcde" {
+		t.Errorf("Expected abcde, got %s", string(s))
+	}
+	if err != nil {
+		t.Errorf("Unexpected error %s", err)
+	}
+}
+
+func TestAutoDecodeStringAcceptsUnpaddedStrings(t *testing.T) {
+	s, err := AutoEncoding.DecodeString("YWJjZGU")
 	if string(s) != "abcde" {
 		t.Errorf("Expected abcde, got %s", string(s))
 	}

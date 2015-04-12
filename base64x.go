@@ -16,7 +16,10 @@ limitations under the License.
 
 package base64addons
 
-import "encoding/base64"
+import (
+	"encoding/base64"
+	"strings"
+)
 
 // Encoding wraps the underlying encoding/base64 implementation, allowing base64fix to intercept a decode method, check the payload, and then forward on.
 type Encoding struct {
@@ -33,24 +36,33 @@ var URLEncoding = Encoding{encoding: base64.URLEncoding}
 // AutoEncoding wraps base64.URLEncoding and will cause data to be autoconverted from StdEncoding to URLEncoding
 var AutoEncoding = Encoding{encoding: base64.URLEncoding, convert: true}
 
-func ensurePadding(data []byte) []byte {
-	if n := len(data) % 4; n != 0 {
-		pad := make([]byte, 4-n)
-		for i := range pad {
-			pad[i] = '='
-		}
-		data = append(data, pad...)
+func ensurePadding(data string) string {
+	n := len(data) % 4
+	if n != 0 {
+		pad := strings.Repeat("=", 4-n)
+		data = data + pad
 	}
 	return data
 }
 
+func convertEncoding(data string) string {
+	r := strings.NewReplacer("+", "-", "/", "_")
+	return r.Replace(data)
+}
+
 // Decode decodes the given base64-encoded src using base64.Decode, first padding the input as needed to comply with base64 standards.
 func (enc *Encoding) Decode(dst, src []byte) (int, error) {
-	return enc.encoding.Decode(dst, ensurePadding(src))
+	data := ensurePadding(string(src))
+	if enc.convert {
+		data = convertEncoding(data)
+	}
+	return enc.encoding.Decode(dst, []byte(data))
 }
 
 // DecodeString decodes the given base64-encoded string using base64.DecodeString, first padding the input as needed to comply with base64 standards.
 func (enc *Encoding) DecodeString(s string) ([]byte, error) {
-	s = string(ensurePadding([]byte(s)))
-	return enc.encoding.DecodeString(s)
+	if enc.convert {
+		s = convertEncoding(s)
+	}
+	return enc.encoding.DecodeString(ensurePadding(s))
 }
