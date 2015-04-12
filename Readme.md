@@ -40,6 +40,8 @@ If the behavior of Go’s `encoding/base64` package changes and becomes more acc
 
 ### AutoEncoding
 
+While most of the time you’ll know if base64 encoded data is in either standard or URL encoding, there are times you might not know. The `AutoEncoding` helps with that by automatically standardizing encoded data before decoding.
+
 ```go
 s, err := base64.AutoEncoding.DecodeString("YWJjZGU")
 ```
