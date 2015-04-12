@@ -1,11 +1,11 @@
 # base64x
 
-This tiny package provides a couple of extensions to Go’s `encoding/base64` package. These extensions are:
+This tiny package provides a wrapper of Go’s `encoding/base64` package to fix up base64 encoded data before decoding. This includes:
 
 * Ability to fixup missing padding in base64 encoded data
 * Translation between base64 data in `StdEncoding` and `URLEncoding`
 
-Both of these are intended to implement robust handling around base64 data that you may process from sources that you don’t control. For example, some implementations don’t include padding in URL-encoded base64 data in cases where the data length is known. Sending over HTTP or as a JSON dictionary parameter? The length is known.
+Both of these are intended to implement robust handling around base64 data that you need to process from sources that you don’t control. For example, according to the RFC, padding is optional for URL encoded data in cases where the data length is known.
 
 
 ## Usage
@@ -37,6 +37,12 @@ i, err := StdEncoding.Decode(d, []byte(s))
 ```
 
 If the behavior of Go’s `encoding/base64` package changes and becomes more accepting of unpadded content, you can easily move back to the default implementation by changing `base64x` to `base64` and dropping the import.
+
+### AutoEncoding
+
+```go
+s, err := base64.AutoEncoding.DecodeString("YWJjZGU")
+```
 
 ## Discussion of padding requirements
 
