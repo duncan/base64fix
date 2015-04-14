@@ -51,7 +51,7 @@ func convertEncoding(data string) string {
 }
 
 // Decode decodes the given base64-encoded src using base64.Decode, first padding the input as needed to comply with base64 standards.
-func (enc *Encoding) Decode(dst, src []byte) (int, error) {
+func (enc Encoding) Decode(dst, src []byte) (int, error) {
 	data := ensurePadding(string(src))
 	if enc.convert {
 		data = convertEncoding(data)
@@ -60,7 +60,7 @@ func (enc *Encoding) Decode(dst, src []byte) (int, error) {
 }
 
 // DecodeString decodes the given base64-encoded string using base64.DecodeString, first padding the input as needed to comply with base64 standards.
-func (enc *Encoding) DecodeString(s string) ([]byte, error) {
+func (enc Encoding) DecodeString(s string) ([]byte, error) {
 	if enc.convert {
 		s = convertEncoding(s)
 	}
